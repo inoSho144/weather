@@ -32,18 +32,13 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: 'weather-forecast/package-lock.json'
 
       - name: Install dependencies
-        working-directory: ./weather-forecast
         run: npm ci
 
       - name: Build
-        working-directory: ./weather-forecast
         env:
           GITHUB_PAGES: true
-          VITE_USE_MOCK_DATA: true
-          VITE_RAKUTEN_APP_ID: ${{ secrets.VITE_RAKUTEN_APP_ID }}
         run: npm run build
 
       - name: Setup Pages
@@ -52,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './weather-forecast/dist'
+          path: './dist'
 
   # デプロイジョブ
   deploy:
