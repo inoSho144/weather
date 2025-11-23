@@ -1,5 +1,15 @@
 <template>
   <div class="weather-container">
+    <div class="weather-condition">
+      <el-time-picker
+        v-model="selectedTime"
+        is-range
+        range-separator="To"
+        start-placeholder="Start time"
+        end-placeholder="End time"
+      />
+    </div>
+
     <div class="weather-chart">
       <canvas ref="chartCanvas"></canvas>
     </div>
@@ -23,12 +33,15 @@ import { onMounted, ref, watch } from 'vue'
 import { useWeatherForecast } from './composable/weather'
 import { Chart, registerables } from 'chart.js'
 import { useChart } from './composable/use-chart'
+import { useTime } from './composable/use-time'
 
 // Chart.jsの登録
 Chart.register(...registerables)
 const chartCanvas = ref<HTMLCanvasElement | null>(null)
 
-const { japanWeather, initWeather, reload } = useWeatherForecast()
+const { selectedTime } = useTime()
+
+const { japanWeather, initWeather, reload } = useWeatherForecast(selectedTime)
 
 const { createChart } = useChart(japanWeather, chartCanvas)
 
@@ -37,6 +50,14 @@ watch(
   () => japanWeather.value,
   () => {
     createChart()
+  },
+  { deep: true },
+)
+
+watch(
+  () => selectedTime,
+  () => {
+    reload()
   },
   { deep: true },
 )

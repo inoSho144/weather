@@ -2,6 +2,7 @@ import { ElMessage } from 'element-plus'
 import { fetchWeatherApi } from 'openmeteo'
 import { ref } from 'vue'
 import { WeatherApiResponse } from '@openmeteo/sdk/weather-api-response'
+import type { Ref } from 'vue'
 
 const JapanLocation = {
   latitude: 35,
@@ -22,7 +23,7 @@ export interface JapanWeatherIn2hours {
  * 天気取得API
  * url: https://open-meteo.com/en/docs?timezone=Asia%2FTokyo&forecast_days=3&latitude=35&longitude=139#location_and_time
  */
-export const useWeatherForecast = () => {
+export const useWeatherForecast = (selectedTime?: Ref<[Date, Date]>) => {
   const url = 'https://api.open-meteo.com/v1/forecast'
   const japanWeather = ref<JapanWeatherIn2hours>()
   const initWeather = async () => {
@@ -42,18 +43,51 @@ export const useWeatherForecast = () => {
     const hourly = weather.hourly()!
     const weatherData = {
       hourly: {
+        // time 配列を作成
+        // - 長さは $N = \dfrac{Number(hourly.timeEnd()) - Number(hourly.time())}{hourly.interval()}$ で計算
+        // - Array(...) に spread を使うことで未定義要素の配列を作り、map の index を利用して各時刻を生成している
         time: [
           ...Array((Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval()),
-        ].map(
-          (_, i) =>
-            new Date(
-              (Number(hourly.time()) + i * hourly.interval() + weather.utcOffsetSeconds()) * 1000,
-            ),
-        ),
+        ].map((_, i) => new Date((Number(hourly.time()) + i * hourly.interval()) * 1000)),
+        // temperature_2m: hourly から変数の配列を取得
+        // - hourly.variables(0) は nullable 型の可能性があるため `!` で非nullアサーションしている
+        // - valuesArray() が実際の数値配列を返す想定
         temperature_2m: hourly.variables(0)!.valuesArray(),
       },
     }
+
+    if (selectedTime?.value) {
+      return filterBySelectedTime(weatherData, selectedTime)
+    }
+
     return weatherData
+  }
+
+  const filterBySelectedTime = (
+    weatherData: JapanWeatherIn2hours,
+    selectedTime: Ref<[Date, Date]>,
+  ): JapanWeatherIn2hours => {
+    const [startTime, endTime] = selectedTime.value
+    const filteredTime: Date[] = []
+    const filteredTemperature: number[] = []
+
+    if (!weatherData.hourly.temperature_2m) {
+      throw new Error('天気データの温度情報が存在しません')
+    }
+
+    weatherData.hourly.time.forEach((time, index) => {
+      if (time >= startTime && time <= endTime) {
+        filteredTime.push(time)
+        filteredTemperature.push(weatherData.hourly.temperature_2m![index] ?? 0)
+      }
+    })
+
+    return {
+      hourly: {
+        time: filteredTime,
+        temperature_2m: new Float32Array(filteredTemperature),
+      },
+    }
   }
 
   const reload = async () => {
