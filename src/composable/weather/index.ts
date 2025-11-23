@@ -11,7 +11,7 @@ const JapanLocation = {
   forecast_days: 1,
 }
 
-interface JapanWeatherIn2hours {
+export interface JapanWeatherIn2hours {
   hourly: {
     time: Date[]
     temperature_2m: Float32Array<ArrayBuffer | SharedArrayBuffer> | null
@@ -56,5 +56,9 @@ export const useWeatherForecast = () => {
     return weatherData
   }
 
-  return { japanWeather, initWeather }
+  const reload = async () => {
+    await initWeather()
+  }
+
+  return { japanWeather, initWeather, reload }
 }
