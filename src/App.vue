@@ -1,71 +1,31 @@
 <template>
   <div class="weather-container">
-    <div class="weather-condition">
-      <el-time-picker
-        v-model="selectedTime"
-        is-range
-        range-separator="To"
-        start-placeholder="Start time"
-        end-placeholder="End time"
-      />
-    </div>
-
-    <div class="weather-chart">
-      <canvas ref="chartCanvas"></canvas>
-    </div>
-
-    <div class="weather-data">
-      <details>
-        <summary>データを表示</summary>
-        <div>
-          <p><strong>時刻:</strong> {{ japanWeather?.hourly.time }}</p>
-          <p><strong>気温:</strong> {{ japanWeather?.hourly.temperature_2m }}</p>
-        </div>
-      </details>
-    </div>
-
-    <button @click="reload">reload</button>
+    <TimeSelector v-model="selectedTime" />
+    <WeatherChart :weather-data="japanWeather" />
+    <WeatherDataDetails :weather-data="japanWeather" />
+    <button @click="handleReload">reload</button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { watchEffect } from 'vue'
 import { useWeatherForecast } from './composable/weather'
-import { Chart, registerables } from 'chart.js'
-import { useChart } from './composable/use-chart'
 import { useTime } from './composable/use-time'
-
-// Chart.jsの登録
-Chart.register(...registerables)
-const chartCanvas = ref<HTMLCanvasElement | null>(null)
+import TimeSelector from './components/TimeSelector.vue'
+import WeatherChart from './components/WeatherChart.vue'
+import WeatherDataDetails from './components/WeatherDataDetails.vue'
 
 const { selectedTime } = useTime()
+const { japanWeather, initWeather } = useWeatherForecast(selectedTime)
 
-const { japanWeather, initWeather, reload } = useWeatherForecast(selectedTime)
-
-const { createChart } = useChart(japanWeather, chartCanvas)
-
-// データが変更されたらチャートを再描画
-watch(
-  () => japanWeather.value,
-  () => {
-    createChart()
-  },
-  { deep: true },
-)
-
-watch(
-  () => selectedTime,
-  () => {
-    reload()
-  },
-  { deep: true },
-)
-
-onMounted(async () => {
+// selectedTimeが変更されたら自動的にデータを再取得
+watchEffect(async () => {
   await initWeather()
-  createChart()
 })
+
+const handleReload = async () => {
+  await initWeather()
+}
 </script>
 
 <style scoped>
@@ -73,29 +33,6 @@ onMounted(async () => {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.weather-chart {
-  margin-bottom: 20px;
-}
-
-canvas {
-  max-height: 400px;
-}
-
-.weather-data {
-  margin: 20px 0;
-}
-
-details {
-  cursor: pointer;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 5px;
-}
-
-summary {
-  font-weight: bold;
 }
 
 button {
