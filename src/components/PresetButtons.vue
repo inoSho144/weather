@@ -42,7 +42,7 @@ const isSelected = (name: string) => {
 h3 {
   font-size: 0.9375rem;
   margin-bottom: 0.75rem;
-  color: #4a5568;
+  color: #334155;
   font-weight: 600;
 }
 

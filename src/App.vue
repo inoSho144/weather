@@ -134,8 +134,8 @@ const allLocations = computed(() => {
   return [...presetLocations, ...customLocations.value]
 })
 
-// グラフの表示状態
-const isChartOpen = ref(false)
+// グラフの表示状態（デフォルトで開く）
+const isChartOpen = ref(true)
 
 const toggleChart = () => {
   isChartOpen.value = !isChartOpen.value
@@ -228,7 +228,7 @@ const handleReload = async () => {
    ヘッダー
    ============================================ */
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -300,10 +300,10 @@ const handleReload = async () => {
 .section-title {
   font-size: 1.25rem;
   font-weight: bold;
-  color: #2d3748;
+  color: #1e293b;
   margin: 0 0 1rem 0;
   padding-left: 0.5rem;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid #3b82f6;
 }
 
 /* ============================================
@@ -314,7 +314,7 @@ const handleReload = async () => {
 }
 
 .overall-stats-card {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
   border: none;
 }
 
@@ -434,7 +434,7 @@ const handleReload = async () => {
 }
 
 .toggle-icon {
-  color: #667eea;
+  color: #3b82f6;
   font-size: 0.875rem;
   font-weight: bold;
   transition: transform 0.2s ease;

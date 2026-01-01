@@ -15,7 +15,10 @@ export const useTime = () => {
 }
 
 export const useTimeRanges = () => {
-  const timeRanges = ref<TimeRange[]>([])
+  // デフォルトで「朝」の時間帯を選択
+  const morningPreset = TIME_PRESETS.find((p) => p.name === 'morning')
+  const initialRanges: TimeRange[] = morningPreset ? [createTimeRangeFromPreset(morningPreset)] : []
+  const timeRanges = ref<TimeRange[]>(initialRanges)
 
   const addTimeRange = (range: Omit<TimeRange, 'id'>) => {
     const newRange: TimeRange = {

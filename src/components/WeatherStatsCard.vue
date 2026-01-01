@@ -59,12 +59,12 @@ const formatTime = (date: Date): string => {
 .range-label {
   font-size: 1.125rem;
   font-weight: bold;
-  color: #2d3748;
+  color: #1e293b;
 }
 
 .time-range {
   font-size: 0.875rem;
-  color: #718096;
+  color: #64748b;
 }
 
 .stats-content {
@@ -79,7 +79,7 @@ const formatTime = (date: Date): string => {
 
 .main-stat {
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
   border-radius: 10px;
   color: white;
 }
@@ -105,7 +105,7 @@ const formatTime = (date: Date): string => {
 
 .stat-label {
   font-size: 0.75rem;
-  color: #718096;
+  color: #64748b;
   margin-bottom: 0.375rem;
   font-weight: 500;
 }
@@ -113,13 +113,13 @@ const formatTime = (date: Date): string => {
 .stat-value.small {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #2d3748;
+  color: #1e293b;
   line-height: 1;
 }
 
 .data-points {
   font-size: 0.75rem;
-  color: #a0aec0;
+  color: #94a3b8;
   text-align: center;
   padding-top: 0.75rem;
   border-top: 1px solid #e2e8f0;
