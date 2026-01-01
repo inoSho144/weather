@@ -14,6 +14,17 @@
     </header>
 
     <main class="main-content">
+      <!-- 場所選択セクション -->
+      <section class="section">
+        <LocationSelector
+          :all-locations="allLocations"
+          :selected-location-id="currentLocation.id"
+          @select-location="handleLocationSelect"
+          @add-custom="handleAddCustomLocation"
+          @remove="handleRemoveLocation"
+        />
+      </section>
+
       <!-- 時間帯選択セクション -->
       <section class="section">
         <TimeRangeSelector
@@ -81,10 +92,6 @@
         </details>
       </section>
 
-      <!-- デバッグ情報（折りたたみ） -->
-      <section class="section debug-section">
-        <WeatherDataDetails :weather-data="japanWeather" />
-      </section>
     </main>
 
     <!-- フッター -->
@@ -98,15 +105,34 @@
 import { watchEffect, computed, ref } from 'vue'
 import { useWeatherForecastWithRanges } from './composable/weather'
 import { useTimeRanges, type TimeRange } from './composable/use-time'
+import { useLocation, LOCATION_PRESETS } from './composable/use-location'
+import { createLocationFromPreset } from './composable/use-location/presets'
 import { calculateStatsForRanges, calculateWeatherStats } from './composable/weather/stats'
+import LocationSelector from './components/LocationSelector.vue'
 import TimeRangeSelector from './components/TimeRangeSelector.vue'
 import WeatherChart from './components/WeatherChart.vue'
 import WeatherStatsCard from './components/WeatherStatsCard.vue'
-import WeatherDataDetails from './components/WeatherDataDetails.vue'
+import type { Location } from './composable/use-location'
 
 const { timeRanges, togglePreset, addTimeRange, removeTimeRange } = useTimeRanges()
+const {
+  currentLocation,
+  customLocations,
+  addCustomLocation,
+  removeCustomLocation,
+  setLocation,
+} = useLocation()
 
-const { japanWeather, rawWeatherData, initWeather } = useWeatherForecastWithRanges(timeRanges)
+const { japanWeather, rawWeatherData, initWeather } = useWeatherForecastWithRanges(
+  timeRanges,
+  currentLocation
+)
+
+// プリセットとカスタム場所を統合したリスト
+const allLocations = computed(() => {
+  const presetLocations = LOCATION_PRESETS.map((preset) => createLocationFromPreset(preset))
+  return [...presetLocations, ...customLocations.value]
+})
 
 // グラフの表示状態
 const isChartOpen = ref(false)
@@ -168,6 +194,18 @@ const handleAddCustom = (range: Omit<TimeRange, 'id'>) => {
 
 const handleRemove = (id: string) => {
   removeTimeRange(id)
+}
+
+const handleLocationSelect = (location: Location) => {
+  setLocation(location)
+}
+
+const handleAddCustomLocation = (location: Omit<Location, 'id'>) => {
+  addCustomLocation(location)
+}
+
+const handleRemoveLocation = (id: string) => {
+  removeCustomLocation(id)
 }
 
 const handleReload = async () => {
@@ -408,19 +446,6 @@ const handleReload = async () => {
 }
 
 /* ============================================
-   デバッグセクション
-   ============================================ */
-.debug-section {
-  margin-top: 2rem;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
-}
-
-.debug-section:hover {
-  opacity: 1;
-}
-
-/* ============================================
    フッター
    ============================================ */
 .app-footer {
@@ -488,10 +513,6 @@ const handleReload = async () => {
   }
 
   .chart-section {
-    margin-top: 1.5rem;
-  }
-
-  .debug-section {
     margin-top: 1.5rem;
   }
 }

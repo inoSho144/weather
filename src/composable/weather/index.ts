@@ -4,14 +4,15 @@ import { ref } from 'vue'
 import { WeatherApiResponse } from '@openmeteo/sdk/weather-api-response'
 import type { Ref } from 'vue'
 import type { TimeRange } from '../use-time/types'
+import type { Location } from '../use-location/types'
 
-const JapanLocation = {
-  latitude: 35,
-  longitude: 139,
+const createWeatherParams = (location: Location) => ({
+  latitude: location.latitude,
+  longitude: location.longitude,
   hourly: 'temperature_2m',
   timezone: 'Asia/Tokyo',
   forecast_days: 1,
-}
+})
 
 export interface JapanWeatherIn2hours {
   hourly: {
@@ -24,12 +25,22 @@ export interface JapanWeatherIn2hours {
  * 天気取得API
  * url: https://open-meteo.com/en/docs?timezone=Asia%2FTokyo&forecast_days=3&latitude=35&longitude=139#location_and_time
  */
-export const useWeatherForecast = (selectedTime?: Ref<[Date, Date]>) => {
+export const useWeatherForecast = (selectedTime?: Ref<[Date, Date]>, location?: Ref<Location>) => {
   const url = 'https://api.open-meteo.com/v1/forecast'
   const japanWeather = ref<JapanWeatherIn2hours>()
   const initWeather = async () => {
     try {
-      const responses = await fetchWeatherApi(url, JapanLocation)
+      const weatherParams = location?.value
+        ? createWeatherParams(location.value)
+        : {
+            latitude: 35.6762,
+            longitude: 139.6503,
+            hourly: 'temperature_2m',
+            timezone: 'Asia/Tokyo',
+            forecast_days: 1,
+          }
+
+      const responses = await fetchWeatherApi(url, weatherParams)
       // Process first location. Add a for-loop for multiple locations or weather models
       const response = responses[0]
 
@@ -125,14 +136,27 @@ export const filterByMultipleTimeRanges = (
   }
 }
 
-export const useWeatherForecastWithRanges = (timeRanges?: Ref<TimeRange[]>) => {
+export const useWeatherForecastWithRanges = (
+  timeRanges?: Ref<TimeRange[]>,
+  location?: Ref<Location>
+) => {
   const url = 'https://api.open-meteo.com/v1/forecast'
   const japanWeather = ref<JapanWeatherIn2hours>()
   const rawWeatherData = ref<JapanWeatherIn2hours>()
 
   const initWeather = async () => {
     try {
-      const responses = await fetchWeatherApi(url, JapanLocation)
+      const weatherParams = location?.value
+        ? createWeatherParams(location.value)
+        : {
+            latitude: 35.6762,
+            longitude: 139.6503,
+            hourly: 'temperature_2m',
+            timezone: 'Asia/Tokyo',
+            forecast_days: 1,
+          }
+
+      const responses = await fetchWeatherApi(url, weatherParams)
       const response = responses[0]
       const moldedData = moldingRaw(response)
 
