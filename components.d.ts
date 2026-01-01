@@ -11,10 +11,20 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CustomRangeInput: typeof import('./src/components/CustomRangeInput.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCard: typeof import('element-plus/es')['ElCard']
     ElDatePicker: typeof import('element-plus/es')['ElDatePicker']
+    ElTag: typeof import('element-plus/es')['ElTag']
     ElTimePicker: typeof import('element-plus/es')['ElTimePicker']
+    PresetButtons: typeof import('./src/components/PresetButtons.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SelectedRangesList: typeof import('./src/components/SelectedRangesList.vue')['default']
+    TimeRangeSelector: typeof import('./src/components/TimeRangeSelector.vue')['default']
+    TimeSelector: typeof import('./src/components/TimeSelector.vue')['default']
+    WeatherChart: typeof import('./src/components/WeatherChart.vue')['default']
+    WeatherDataDetails: typeof import('./src/components/WeatherDataDetails.vue')['default']
+    WeatherStatsCard: typeof import('./src/components/WeatherStatsCard.vue')['default']
   }
 }

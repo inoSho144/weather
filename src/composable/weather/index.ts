@@ -3,6 +3,7 @@ import { fetchWeatherApi } from 'openmeteo'
 import { ref } from 'vue'
 import { WeatherApiResponse } from '@openmeteo/sdk/weather-api-response'
 import type { Ref } from 'vue'
+import type { TimeRange } from '../use-time/types'
 
 const JapanLocation = {
   latitude: 35,
@@ -95,4 +96,74 @@ export const useWeatherForecast = (selectedTime?: Ref<[Date, Date]>) => {
   }
 
   return { japanWeather, initWeather, reload }
+}
+
+export const filterByMultipleTimeRanges = (
+  weatherData: JapanWeatherIn2hours,
+  timeRanges: TimeRange[]
+): JapanWeatherIn2hours => {
+  const filteredTime: Date[] = []
+  const filteredTemperature: number[] = []
+
+  if (!weatherData.hourly.temperature_2m) {
+    throw new Error('天気データの温度情報が存在しません')
+  }
+
+  weatherData.hourly.time.forEach((time, index) => {
+    const isInRange = timeRanges.some((range) => time >= range.start && time <= range.end)
+    if (isInRange) {
+      filteredTime.push(time)
+      filteredTemperature.push(weatherData.hourly.temperature_2m![index] ?? 0)
+    }
+  })
+
+  return {
+    hourly: {
+      time: filteredTime,
+      temperature_2m: new Float32Array(filteredTemperature),
+    },
+  }
+}
+
+export const useWeatherForecastWithRanges = (timeRanges?: Ref<TimeRange[]>) => {
+  const url = 'https://api.open-meteo.com/v1/forecast'
+  const japanWeather = ref<JapanWeatherIn2hours>()
+  const rawWeatherData = ref<JapanWeatherIn2hours>()
+
+  const initWeather = async () => {
+    try {
+      const responses = await fetchWeatherApi(url, JapanLocation)
+      const response = responses[0]
+      const moldedData = moldingRaw(response)
+
+      rawWeatherData.value = moldedData
+
+      if (timeRanges?.value && timeRanges.value.length > 0) {
+        japanWeather.value = filterByMultipleTimeRanges(moldedData, timeRanges.value)
+      } else {
+        japanWeather.value = moldedData
+      }
+    } catch {
+      ElMessage.error('天気の取得に失敗しました')
+    }
+  }
+
+  const moldingRaw = (weather: WeatherApiResponse | undefined): JapanWeatherIn2hours => {
+    if (weather === undefined) throw new Error('天気の値が存在しません')
+    const hourly = weather.hourly()!
+    return {
+      hourly: {
+        time: [
+          ...Array((Number(hourly.timeEnd()) - Number(hourly.time())) / hourly.interval()),
+        ].map((_, i) => new Date((Number(hourly.time()) + i * hourly.interval()) * 1000)),
+        temperature_2m: hourly.variables(0)!.valuesArray(),
+      },
+    }
+  }
+
+  const reload = async () => {
+    await initWeather()
+  }
+
+  return { japanWeather, rawWeatherData, initWeather, reload }
 }

@@ -21,6 +21,7 @@
   "dependencies": {
     "base64url": "^3.0.1",
     "chart.js": "^4.5.1",
+    "chartjs-plugin-annotation": "^3.1.0",
     "element-plus": "^2.11.8",
     "openmeteo": "^1.2.1",
     "pinia": "^3.0.3",
